@@ -1,0 +1,20 @@
+[project]
+name = "python-chainlit-multi-agents-playground"
+version = "0.0.0"
+description = "Utilises Chainlit while integrating various model interfaces e.g. Gemini, etc."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chainlit>=2.8.1",
+    "datasets>=3.6.0",
+    "duckduckgo-search>=8.0.4",
+    "faiss-cpu>=1.11.0",
+    "fsspec==2025.3.0",
+    "huggingface-hub>=0.31.2",
+    "langchain-community>=0.3.26",
+    "langchain>=0.3.26",
+    "litellm>=1.74.0",
+    "pydantic-settings>=2.10.1",
+    "sentence-transformers>=5.0.0",
+    "smolagents>=1.21.3",
+]
