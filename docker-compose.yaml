@@ -1,0 +1,60 @@
+services:
+  chainlit:
+    platform: "linux/amd64"
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - .chainlit:/code/.files
+    ports:
+      - "8000:8000"
+    restart: always
+    networks:
+      - app
+    depends_on:
+      - ollama
+      - ollama-setup
+
+  ollama:
+    image: ollama/ollama:${OLLAMA_TAG:-latest}
+    platform: "linux/amd64"
+    environment:
+      - OLLAMA_KEEP_ALIVE="60m"
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: always
+    # Enable GPU support using host machine
+    # https://docs.docker.com/compose/how-tos/gpu-support/
+    #deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: all
+    #          capabilities: [ gpu ]
+
+  ollama-setup:
+    image: curlimages/curl:${CURLIMAGES_TAG:-latest}
+    command:
+      - -X
+      - POST
+      - http://ollama:11434/api/pull
+      - -d
+      - '{"name": "gemma3n:e4b"}' # mistral:instruct OR llama3:instruct OR phi3:instruct OR
+      - -H
+      - "Content-Type: application/json"
+    networks:
+      - app
+    depends_on:
+      - ollama
+
+volumes:
+  chainlit:
+  ollama:
+
+networks:
+  app:
