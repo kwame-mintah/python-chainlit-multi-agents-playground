@@ -26,6 +26,8 @@ services:
       - ollama:/root/.ollama
     ports:
       - "11434:11434"
+    networks:
+      - app
     restart: always
     # Enable GPU support using host machine
     # https://docs.docker.com/compose/how-tos/gpu-support/
