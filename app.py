@@ -12,7 +12,10 @@ async def main(message: cl.Message):
 
     print(response)
 
+    for msg in response["messages"]:
+        msg.pretty_print()
+
     # Send a response back to the user
     await cl.Message(
-        content=response['messages'][-1].content,
+        content=response['messages'][-1].content[-1],
     ).send()
