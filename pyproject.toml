@@ -16,4 +16,6 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "sentence-transformers>=5.0.0",
     "smolagents>=1.21.3",
+    "langgraph>=0.0.62",
+    "langchain[google-genai]>=0.3.26"
 ]
