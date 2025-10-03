@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip==25.2 && \
 COPY .chainlit /code/.chainlit
 COPY config.py /code/app/
 COPY app.py /code/app/
+COPY agent.py /code/app/
 
 # Start ..chainlit application
 # https://docs.chainlit.io/backend/command-line
