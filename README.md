@@ -6,6 +6,36 @@ As the name of the repository suggests, it's just a [_playground_](https://dicti
 A place to better understand using [chainlit](https://github.com/Chainlit/chainlit), while employing various agents utilising large language models (LLM) via
 various inference providers to accomplish a given task. This project aims to be agent development kit (adk) agnostic as possible.
 
+## LangGraph diagram
+
+Here's a step-by-step interpretation of the flow of the LLM.
+
+```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+        __start__([<p>__start__</p>]):::first
+        agent(agent)
+        tools(tools)
+        final(final)
+        __end__([<p>__end__</p>]):::last
+        __start__ --> agent;
+        agent -.-> final;
+        agent -.-> tools;
+        tools --> agent;
+        final --> __end__;
+        classDef default fill:#f2f0ff,line-height:1.2
+        classDef first fill-opacity:0
+        classDef last fill:#bfb6fc
+```
+
+<!---
+graph.get_graph().draw_mermaid()
+--->
+
 ## Prerequisites
 
 1. [Docker for desktop](https://docs.docker.com/desktop/)
