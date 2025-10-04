@@ -10,3 +10,12 @@ class EnvironmentVariables(BaseSettings):
     OLLAMA_LLM_MODEL: str = Field(
         description="The Ollama model to use", default="deepseek-r1:1.5b"
     )
+    GOOGLE_GEMINI_API_KEY: str = Field(
+        description="Your Google Gemini API key", alias="GOOGLE_API_KEY", default=""
+    )
+    GOOGLE_GEMINI_LLM_MODEL: str = Field(
+        description="The Gemini model to use", default="gemini-2.5-flash"
+    )
+
+
+environment_variables = EnvironmentVariables()

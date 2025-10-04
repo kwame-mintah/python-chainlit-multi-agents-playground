@@ -7,7 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "chainlit>=2.8.1",
     "datasets>=3.6.0",
-    "duckduckgo-search>=8.0.4",
     "faiss-cpu>=1.11.0",
     "fsspec==2025.3.0",
     "huggingface-hub>=0.31.2",
@@ -17,4 +16,6 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "sentence-transformers>=5.0.0",
     "smolagents>=1.21.3",
+    "langgraph>=0.0.62",
+    "langchain[google-genai,ollama]>=0.3.26"
 ]
