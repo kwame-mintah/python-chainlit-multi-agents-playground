@@ -23,7 +23,7 @@ pip install -r requirements.txt
 2. Run the application
 
 ```pycon
-python main.py
+chainlit run app.py
 ```
 
 ### Usage via `uv`
@@ -37,7 +37,7 @@ uv sync
 2. Run the application
 
 ```pycon
-uv run main.py
+uv run chainlit run app.py
 ```
 
 ### Usage via `docker compose`
