@@ -17,5 +17,5 @@ dependencies = [
     "sentence-transformers>=5.0.0",
     "smolagents>=1.21.3",
     "langgraph>=0.0.62",
-    "langchain[google-genai]>=0.3.26"
+    "langchain[google-genai,ollama]>=0.3.26"
 ]
