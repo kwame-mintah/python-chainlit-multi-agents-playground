@@ -4,6 +4,10 @@ from pydantic_settings import BaseSettings
 
 
 class EnvironmentVariables(BaseSettings):
+    LLM_INFERENCE_PROVIDER: str = Field(
+        description="The inference model provider to use",
+        default="ollama",
+    )
     OLLAMA_URL: Url = Field(
         description="The Ollama host URL", default="http://localhost:11434"
     )

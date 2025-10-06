@@ -6,8 +6,9 @@ from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
-from inference_models import ollama
+from config import environment_variables
 from tools import final_model, tool_node
+from utils import get_inference_model
 
 
 def should_continue(state: MessagesState) -> Literal["tools", "final"]:
@@ -19,8 +20,11 @@ def should_continue(state: MessagesState) -> Literal["tools", "final"]:
 
 
 async def call_model(state: MessagesState) -> dict:
+    model = get_inference_model(
+        model_provider=environment_variables.LLM_INFERENCE_PROVIDER
+    )
     messages = state["messages"]
-    response = await ollama.ainvoke(messages)
+    response = await model.ainvoke(messages)
     if not isinstance(response, BaseMessage):
         raise TypeError(f"Expected BaseMessage, got {type(response)}")
     return {"messages": [response]}

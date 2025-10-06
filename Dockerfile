@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip==25.2 && \
 
 # Copy application code to `/code/app/`
 COPY .chainlit /code/.chainlit
-COPY app.py config.py inference_models.py tools.py /code/app/
+COPY app.py config.py inference_models.py tools.py utils.py /code/app/
 
 # Start ..chainlit application
 # https://docs.chainlit.io/backend/command-line

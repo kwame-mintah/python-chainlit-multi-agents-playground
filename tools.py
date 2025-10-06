@@ -3,7 +3,8 @@ from typing import Literal
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
-from inference_models import ollama
+from config import environment_variables
+from utils import get_inference_model
 
 
 @tool
@@ -17,9 +18,13 @@ def get_weather(city: Literal["nyc", "sf"]):
         raise AssertionError("Unknown city")
 
 
+llm_model = get_inference_model(
+    model_provider=environment_variables.LLM_INFERENCE_PROVIDER
+)
+
 tools = [get_weather]
-model = ollama
-final_model = ollama
+model = llm_model
+final_model = llm_model
 
 model = model.bind_tools(tools)
 # NOTE: this is where we're adding a tag that we'll can use later to filter the model stream events to only the model called in the final node.
