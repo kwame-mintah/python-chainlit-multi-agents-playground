@@ -3,8 +3,8 @@ from typing import Literal
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
-from config import environment_variables
-from utils import get_inference_model
+from config.settings import environment_variables
+from utils.inference_utils import get_inference_model
 
 
 @tool
