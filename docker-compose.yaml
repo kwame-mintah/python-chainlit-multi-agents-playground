@@ -11,7 +11,7 @@ services:
       - GOOGLE_GEMINI_LLM_MODEL=gemini-2.5-flash
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     volumes:
-      - .chainlit:/code/.files
+      - .chainlit/.files:/code/.chainlit/.files
     ports:
       - "8000:8000"
     restart: always
