@@ -6,9 +6,13 @@ from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
-from config import environment_variables
-from tools import final_model, tool_node
-from utils import get_inference_model
+from agents.development import (
+    scrum_orchestrator_agent,
+    software_engineer_agent,
+    product_owner_agent,
+)
+from agents.prompts import SoftwareDevelopmentTeamPrompts
+from agents.tools.tools import final_model
 
 
 def should_continue(state: MessagesState) -> Literal["tools", "final"]:
@@ -20,11 +24,8 @@ def should_continue(state: MessagesState) -> Literal["tools", "final"]:
 
 
 async def call_model(state: MessagesState) -> dict:
-    model = get_inference_model(
-        model_provider=environment_variables.LLM_INFERENCE_PROVIDER
-    )
     messages = state["messages"]
-    response = await model.ainvoke(messages)
+    response = await scrum_orchestrator_agent.ainvoke(messages)
     if not isinstance(response, BaseMessage):
         raise TypeError(f"Expected BaseMessage, got {type(response)}")
     return {"messages": [response]}
@@ -36,7 +37,7 @@ async def call_final_model(state: MessagesState) -> dict:
 
     response = await final_model.ainvoke(
         [
-            SystemMessage(content="Rewrite this in the voice of Al Roker"),
+            SystemMessage(content=SoftwareDevelopmentTeamPrompts.system_prompt),
             HumanMessage(content=last_ai_message.content),
         ]
     )
@@ -48,17 +49,17 @@ async def call_final_model(state: MessagesState) -> dict:
     return {"messages": [response]}
 
 
-builder = StateGraph(MessagesState)
-builder.add_node("agent", call_model)
-builder.add_node("tools", tool_node)
-builder.add_node("final", call_final_model)
-
-builder.add_edge(START, "agent")
-builder.add_conditional_edges("agent", should_continue)
-builder.add_edge("tools", "agent")
-builder.add_edge("final", END)
-
-graph = builder.compile()
+graph = (
+    StateGraph(MessagesState)
+    .add_node("development_team", scrum_orchestrator_agent)
+    .add_node("software_engineer_agent", software_engineer_agent)
+    .add_node("product_owner_agent", product_owner_agent)
+    .add_edge(START, "development_team")
+    .add_edge("development_team", "software_engineer_agent")
+    .add_edge("software_engineer_agent", "product_owner_agent")
+    .add_edge("product_owner_agent", END)
+    .compile(name="development_team_graph")
+)
 
 
 @cl.on_message
