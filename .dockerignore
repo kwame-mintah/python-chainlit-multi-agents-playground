@@ -1,0 +1,8 @@
+*.yaml
+.dockerignore
+.envrc
+.gitignore
+.idea
+.python-version
+.venv
+README.md
