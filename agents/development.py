@@ -3,6 +3,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
 
 from agents.prompts import SoftwareDevelopmentTeamPrompts
+from agents.tools.tools import get_weather
 from config.settings import environment_variables
 from utils.inference_utils import get_inference_model
 
@@ -22,7 +23,7 @@ software_engineer_agent = create_react_agent(
     model=get_inference_model(
         model_provider=environment_variables.LLM_INFERENCE_PROVIDER
     ),
-    tools=[],
+    tools=[get_weather],
     prompt=PromptTemplate.from_template(
         template=SoftwareDevelopmentTeamPrompts.software_engineer_prompt()
     ),
