@@ -2,7 +2,7 @@ from typing import Literal
 
 import chainlit as cl
 from langchain.schema.runnable.config import RunnableConfig
-from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
@@ -11,8 +11,7 @@ from agents.development import (
     software_engineer_agent,
     product_owner_agent,
 )
-from agents.prompts import SoftwareDevelopmentTeamPrompts
-from agents.tools.tools import final_model
+from agents.tools.tools import tool_node
 
 
 def should_continue(state: MessagesState) -> Literal["tools", "final"]:
@@ -31,33 +30,23 @@ async def call_model(state: MessagesState) -> dict:
     return {"messages": [response]}
 
 
-async def call_final_model(state: MessagesState) -> dict:
-    messages = state["messages"]
-    last_ai_message = messages[-1]
-
-    response = await final_model.ainvoke(
-        [
-            SystemMessage(content=SoftwareDevelopmentTeamPrompts.system_prompt),
-            HumanMessage(content=last_ai_message.content),
-        ]
-    )
-
-    if not isinstance(response, BaseMessage):
-        raise TypeError(f"Expected BaseMessage, got {type(response)}")
-
-    # Don't override ID unless absolutely necessary
-    return {"messages": [response]}
-
-
 graph = (
     StateGraph(MessagesState)
-    .add_node("development_team", scrum_orchestrator_agent)
-    .add_node("software_engineer_agent", software_engineer_agent)
+    # Add nodes
     .add_node("product_owner_agent", product_owner_agent)
-    .add_edge(START, "development_team")
-    .add_edge("development_team", "software_engineer_agent")
-    .add_edge("software_engineer_agent", "product_owner_agent")
-    .add_edge("product_owner_agent", END)
+    .add_node("scrum_master", scrum_orchestrator_agent)
+    .add_node("software_engineer_agent", software_engineer_agent)
+    .add_node("tools", tool_node)
+    # Add edges
+    .add_edge(start_key=START, end_key="product_owner_agent")
+    .add_edge(start_key="product_owner_agent", end_key="scrum_master")
+    .add_edge(start_key="scrum_master", end_key="software_engineer_agent")
+    .add_edge(start_key="software_engineer_agent", end_key="tools")
+    .add_edge(start_key="tools", end_key="software_engineer_agent")
+    .add_edge(start_key="software_engineer_agent", end_key="scrum_master")
+    .add_edge(start_key="scrum_master", end_key="product_owner_agent")
+    .add_edge(start_key="product_owner_agent", end_key=END)
+    # Compile the graph
     .compile(name="development_team_graph")
 )
 
