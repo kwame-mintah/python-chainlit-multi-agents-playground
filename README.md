@@ -10,6 +10,8 @@ various inference providers to accomplish a given task. This project aims to be 
 
 Here's a step-by-step interpretation of the flow of the LLM.
 
+<p style="text-align:center"> 🚧  👷 Currently in the early stages of development, current graph implementation might change. 👷 🚧 </p>
+
 ```mermaid
 ---
 config:
@@ -18,15 +20,17 @@ config:
 ---
 graph TD;
         __start__([<p>__start__</p>]):::first
-        agent(agent)
+        product_owner_agent(product_owner_agent)
+        scrum_master(scrum_master)
+        software_engineer_agent(software_engineer_agent)
         tools(tools)
-        final(final)
-        __end__([<p>__end__</p>]):::last
-        __start__ --> agent;
-        agent -.-> final;
-        agent -.-> tools;
-        tools --> agent;
-        final --> __end__;
+        __start__ --> product_owner_agent;
+        product_owner_agent --> scrum_master;
+        scrum_master --> product_owner_agent;
+        scrum_master --> software_engineer_agent;
+        software_engineer_agent --> scrum_master;
+        software_engineer_agent --> tools;
+        tools --> software_engineer_agent;
         classDef default fill:#f2f0ff,line-height:1.2
         classDef first fill-opacity:0
         classDef last fill:#bfb6fc
