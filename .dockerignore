@@ -1,0 +1,7 @@
+*.yaml
+.dockerignore
+.envrc
+.gitignore
+.idea
+.venv
+README.md

@@ -2,21 +2,12 @@ from typing import Union
 
 from langchain_core.language_models import BaseChatModel
 
-from inference_models import ollama, gemini
+from llm_models.inference_models import ollama, gemini
 
 
 def get_inference_model(
     model_provider: str,
 ) -> Union[BaseChatModel, None]:
-    """
-    Get the pre-configured LLM model provider.
-
-    Args:
-        model_provider ():
-
-    Returns:
-        The LLM model `BaseChatModel`
-    """
     provider_name_mapping: dict = {
         "ollama": ollama,
         "gemini": gemini,

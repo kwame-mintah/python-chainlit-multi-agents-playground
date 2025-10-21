@@ -2,13 +2,16 @@ from typing import Literal
 
 import chainlit as cl
 from langchain.schema.runnable.config import RunnableConfig
-from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
-from config import environment_variables
-from tools import final_model, tool_node
-from utils import get_inference_model
+from agents.development import (
+    scrum_orchestrator_agent,
+    software_engineer_agent,
+    product_owner_agent,
+)
+from agents.tools.tools import tool_node
 
 
 def should_continue(state: MessagesState) -> Literal["tools", "final"]:
@@ -20,45 +23,32 @@ def should_continue(state: MessagesState) -> Literal["tools", "final"]:
 
 
 async def call_model(state: MessagesState) -> dict:
-    model = get_inference_model(
-        model_provider=environment_variables.LLM_INFERENCE_PROVIDER
-    )
     messages = state["messages"]
-    response = await model.ainvoke(messages)
+    response = await scrum_orchestrator_agent.ainvoke(messages)
     if not isinstance(response, BaseMessage):
         raise TypeError(f"Expected BaseMessage, got {type(response)}")
     return {"messages": [response]}
 
 
-async def call_final_model(state: MessagesState) -> dict:
-    messages = state["messages"]
-    last_ai_message = messages[-1]
-
-    response = await final_model.ainvoke(
-        [
-            SystemMessage(content="Rewrite this in the voice of Al Roker"),
-            HumanMessage(content=last_ai_message.content),
-        ]
-    )
-
-    if not isinstance(response, BaseMessage):
-        raise TypeError(f"Expected BaseMessage, got {type(response)}")
-
-    # Don't override ID unless absolutely necessary
-    return {"messages": [response]}
-
-
-builder = StateGraph(MessagesState)
-builder.add_node("agent", call_model)
-builder.add_node("tools", tool_node)
-builder.add_node("final", call_final_model)
-
-builder.add_edge(START, "agent")
-builder.add_conditional_edges("agent", should_continue)
-builder.add_edge("tools", "agent")
-builder.add_edge("final", END)
-
-graph = builder.compile()
+graph = (
+    StateGraph(MessagesState)
+    # Add nodes
+    .add_node("product_owner_agent", product_owner_agent)
+    .add_node("scrum_master", scrum_orchestrator_agent)
+    .add_node("software_engineer_agent", software_engineer_agent)
+    .add_node("tools", tool_node)
+    # Add edges
+    .add_edge(start_key=START, end_key="product_owner_agent")
+    .add_edge(start_key="product_owner_agent", end_key="scrum_master")
+    .add_edge(start_key="scrum_master", end_key="software_engineer_agent")
+    .add_edge(start_key="software_engineer_agent", end_key="tools")
+    .add_edge(start_key="tools", end_key="software_engineer_agent")
+    .add_edge(start_key="software_engineer_agent", end_key="scrum_master")
+    .add_edge(start_key="scrum_master", end_key="product_owner_agent")
+    .add_edge(start_key="product_owner_agent", end_key=END)
+    # Compile the graph
+    .compile(name="development_team_graph")
+)
 
 
 @cl.on_message

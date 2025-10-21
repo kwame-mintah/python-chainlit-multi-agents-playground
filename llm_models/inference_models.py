@@ -1,7 +1,7 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 
-from config import environment_variables
+from config.settings import environment_variables
 
 ollama = ChatOllama(
     model=environment_variables.OLLAMA_LLM_MODEL,
