@@ -1,7 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'europe-west2-docker.pkg.dev/syntax-errors/ai-agent-docker-image-id-1/python-chainlit-multi-agents-playground:$SHORT_SHA', '.' ]
+  args: [ 'build', '-t', 'europe-west2-docker.pkg.dev/syntax-errors/dev-ai-agent-docker-images/python-chainlit-multi-agents-playground:$SHORT_SHA', '.' ]
 images:
-- 'europe-west2-docker.pkg.dev/syntax-errors/ai-agent-docker-image-id-1/python-chainlit-multi-agents-playground:$SHORT_SHA'
+- 'europe-west2-docker.pkg.dev/syntax-errors/dev-ai-agent-docker-images/python-chainlit-multi-agents-playground:$SHORT_SHA'
 options:
   logging: CLOUD_LOGGING_ONLY
