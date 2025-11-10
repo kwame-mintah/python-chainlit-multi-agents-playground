@@ -5,7 +5,7 @@ services:
       context: "."
       dockerfile: "Dockerfile"
     environment:
-      - LLM_INFERENCE_PROVIDER=hugging-face
+      - LLM_INFERENCE_PROVIDER=ollama
       - OLLAMA_URL=http://ollama:11434
       - OLLAMA_LLM_MODEL=mistral-nemo:12b-instruct-2407-q4_0
       - GOOGLE_GEMINI_LLM_MODEL=gemini-2.5-flash
