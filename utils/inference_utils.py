@@ -2,7 +2,7 @@ from typing import Union
 
 from langchain_core.language_models import BaseChatModel
 
-from llm_models.inference_models import ollama, gemini
+from llm_models.inference_models import ollama, gemini, hugging_face
 
 
 def get_inference_model(
@@ -11,6 +11,7 @@ def get_inference_model(
     provider_name_mapping: dict = {
         "ollama": ollama,
         "gemini": gemini,
+        "hugging-face": hugging_face,
     }
     model = provider_name_mapping.get(model_provider, None)
 

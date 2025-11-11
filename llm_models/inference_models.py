@@ -1,4 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_ollama import ChatOllama
 
 from config.settings import environment_variables
@@ -16,3 +17,10 @@ gemini = ChatGoogleGenerativeAI(
     google_api_key=environment_variables.GOOGLE_GEMINI_API_KEY,
     include_thoughts=True,
 )
+
+hugging_face_llm = HuggingFaceEndpoint(
+    repo_id=environment_variables.HUGGING_FACE_INFERENCE_MODEL,
+    huggingfacehub_api_token=environment_variables.HUGGINGFACEHUB_API_TOKEN,
+)
+
+hugging_face = ChatHuggingFace(llm=hugging_face_llm)
