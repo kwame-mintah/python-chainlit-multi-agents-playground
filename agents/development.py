@@ -38,3 +38,7 @@ scrum_orchestrator_agent = create_supervisor(
         template=SoftwareDevelopmentTeamPrompts.system_prompt
     ),
 ).compile(name="agile")
+
+model = get_inference_model(
+        model_provider=environment_variables.LLM_INFERENCE_PROVIDER
+    )
