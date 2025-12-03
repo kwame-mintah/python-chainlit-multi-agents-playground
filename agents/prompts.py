@@ -1,3 +1,8 @@
+import json
+
+from agents.structured_outputs import Requirements
+
+
 class SoftwareDevelopmentTeamPrompts:
     """
     TBA
@@ -24,7 +29,16 @@ class SoftwareDevelopmentTeamPrompts:
         **User request**
 
         {{input}}
-        """
+
+        **Return the output in JSON format, following the schema detailed below**
+
+        """ + (
+            f"```json"
+            f"\n"
+            f"{json.dumps(Requirements.model_json_schema(), indent=2)}"
+            f"\n"
+            f"```"
+        )
 
         return prompt
 
@@ -38,6 +52,7 @@ class SoftwareDevelopmentTeamPrompts:
         - You can use the internet to find ideas or similar solutions if you are not sure or just looking for alternatives.
 
         **Requirements**
+
         {{input}}
         """
 
