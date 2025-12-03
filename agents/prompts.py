@@ -23,7 +23,9 @@ class SoftwareDevelopmentTeamPrompts:
 
         **User request**
 
-        {{input}}
+        {{user_input}}
+
+        ALWAYS return requirements in valid JSON and not markdown!!!!
         """
 
         return prompt
@@ -38,7 +40,7 @@ class SoftwareDevelopmentTeamPrompts:
         - You can use the internet to find ideas or similar solutions if you are not sure or just looking for alternatives.
 
         **Requirements**
-        {{input}}
+        {{product_manager_spec}}
         """
 
         return prompt

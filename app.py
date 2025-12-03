@@ -1,9 +1,10 @@
+import json
 from typing import Literal, TypedDict
 
 from agents.prompts import SoftwareDevelopmentTeamPrompts
 import chainlit as cl
 from langchain.schema.runnable.config import RunnableConfig
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
@@ -20,6 +21,7 @@ class State(TypedDict):
     product_manager_spec: str
     response: str
     code: str
+    requirements: dict
     
 
 def product_manager_node(state: State) -> State:
@@ -35,35 +37,39 @@ def product_manager_node(state: State) -> State:
     ]
 
     response = model.invoke(messages)
-    print(response)
+    print("Product Manager Response:")
+    print(response.content)
 
-    state["product_manager_spec"] = response.content
+    response_content = response.content
+    start = response_content.find("json") + len("json")
+    end = response_content.find("```", start)
+
+    state["product_manager_spec"] = json.loads(response_content[start:end].strip())
     return state
 
 
 def dev_node(state: State) -> State:
     # Get the product spec from the previous node's output
-    spec = state["product_manager_spec"]
+    spec = state["product_manager_spec"]["requirements"]
+    
+    print("Product Spec for Developer:")
+    print(spec)
+    state["requirements"] = spec
 
-    messages = [
-        (
-            "system",
-            "You are a smart software developer that can write code based on product specs.",
-        ),
-        ("human", f"Write code based on this spec: {spec}") # Pass the spec to the LLM
-    ]
-
-    response = software_engineer_agent.model.invoke(messages)
+    response = software_engineer_agent.invoke(spec)
+    print("Developer Response:")
     print(response)
 
-    state["code"] = response.content
+
+    state["code"] = response["messages"][0].content
+
     return state
 
 graph = (
     StateGraph(State)
     # Add nodes
     .add_node("product_owner_agent", product_manager_node)
-    .add_node("software_engineer_agent", software_engineer_agent)
+    .add_node("software_engineer_agent", dev_node)
 
     # Add edges
     .add_edge(start_key=START, end_key="product_owner_agent")
@@ -94,7 +100,7 @@ async def on_message(user_msg: cl.Message):
         if isinstance(msg, HumanMessage):
             continue
 
-        if msg.content and metadata.get("langgraph_node") == "final":
+        if msg.content and metadata.get("langgraph_node") == "dev_node":
             await final_answer.stream_token(msg.content)
 
     await final_answer.send()
