@@ -1,6 +1,6 @@
 import json
 
-from agents.structured_outputs import Requirements
+from agents.structured_outputs import ProductOwnerSpecification
 
 
 class SoftwareDevelopmentTeamPrompts:
@@ -35,7 +35,7 @@ class SoftwareDevelopmentTeamPrompts:
         """ + (
             f"```json"
             f"\n"
-            f"{json.dumps(Requirements.model_json_schema(), indent=2)}"
+            f"{json.dumps(ProductOwnerSpecification.model_json_schema(), indent=2)}"
             f"\n"
             f"```"
         )

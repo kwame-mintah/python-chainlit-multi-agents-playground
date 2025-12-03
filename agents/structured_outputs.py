@@ -18,7 +18,7 @@ class Requirement(BaseModel):
             "The system shall allow users to create new todo items with a title, optional description, optional due date, and optional priority level."
         ]
     )
-    acceptance_criteria: List = Field(
+    acceptance_criteria: List[str] = Field(
         examples=[
             "A user can enter a title (mandatory, max 255 characters).",
             "A user can enter a description (optional, multiline text).",
@@ -31,9 +31,28 @@ class Requirement(BaseModel):
     status: str = Field(examples=["Pending"])
 
 
-class Requirements(BaseModel):
+class UserStories(BaseModel):
+    id: str = Field(examples=["RUS-001"])
+    title: str = Field(examples=["Create a new task"])
+    story: str = Field(
+        examples=[
+            "As a user, I want to add new tasks to my list, so I can keep track of what I need to do."
+        ]
+    )
+    requirements_linked: List[str] = Field(examples=["REQ-001"])
+    status: str = Field(examples=["Pending"])
+
+
+class ProductOwnerSpecification(BaseModel):
     """
     Requirements for the software engineer agent
     """
 
+    product_name: str = Field(examples=["Simple Todo Application"])
+    description: str = Field(
+        examples=[
+            "A web-based application allowing users to manage their daily tasks, including creating, viewing, updating, marking complete, and deleting todo items."
+        ]
+    )
     requirements: List[Requirement]
+    user_stories: List[UserStories]
