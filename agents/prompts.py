@@ -1,8 +1,3 @@
-import json
-
-from agents.structured_outputs import ProductOwnerSpecification
-
-
 class SoftwareDevelopmentTeamPrompts:
     """
     TBA
@@ -26,19 +21,7 @@ class SoftwareDevelopmentTeamPrompts:
         - Interpret feedback given in natural language and translate it into actionable insights for the development process.
         - Continuously check progress, mark what requirements are ready and set next goals to the team. Accept only a requirement if the actual code is ready.
 
-        **User request**
-
-        {{input}}
-
-        **Return the output in JSON format, following the schema detailed below**
-
-        """ + (
-            f"```json"
-            f"\n"
-            f"{json.dumps(ProductOwnerSpecification.model_json_schema(), indent=2)}"
-            f"\n"
-            f"```"
-        )
+        """
 
         return prompt
 
