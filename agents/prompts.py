@@ -21,9 +21,6 @@ class SoftwareDevelopmentTeamPrompts:
         - Interpret feedback given in natural language and translate it into actionable insights for the development process.
         - Continuously check progress, mark what requirements are ready and set next goals to the team. Accept only a requirement if the actual code is ready.
 
-        **User request**
-
-        {{input}}
         """
 
         return prompt
@@ -38,6 +35,7 @@ class SoftwareDevelopmentTeamPrompts:
         - You can use the internet to find ideas or similar solutions if you are not sure or just looking for alternatives.
 
         **Requirements**
+
         {{input}}
         """
 
