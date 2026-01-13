@@ -15,7 +15,7 @@ ollama = ChatOllama(
 gemini = ChatGoogleGenerativeAI(
     model=environment_variables.GOOGLE_GEMINI_LLM_MODEL,
     google_api_key=environment_variables.GOOGLE_GEMINI_API_KEY,
-    include_thoughts=True,
+    include_thoughts=False,
 )
 
 hugging_face_llm = HuggingFaceEndpoint(
