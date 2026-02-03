@@ -34,20 +34,19 @@ def product_manager_node(state: State) -> State:
     print("Product Manager Response:")
     print(response)
 
-    # Extract content from the response messages
-    if "messages" in response and len(response["messages"]) > 0:
+    # Extract the structured_response if available, otherwise use message content
+    if "structured_response" in response:
+        state["product_manager_spec"] = response["structured_response"]
+    elif "messages" in response and len(response["messages"]) > 0:
+        # Try to parse from message content as fallback
         response_content = response["messages"][-1].content
+        try:
+            parsed_spec = json.loads(response_content) if isinstance(response_content, str) else response_content
+            state["product_manager_spec"] = parsed_spec
+        except (json.JSONDecodeError, TypeError):
+            state["product_manager_spec"] = response_content
     else:
-        response_content = str(response)
-    
-    # Parse the structured output from the response
-    try:
-        # The response content should be JSON from the structured output
-        parsed_spec = json.loads(response_content) if isinstance(response_content, str) else response_content
-        state["product_manager_spec"] = parsed_spec
-    except json.JSONDecodeError:
-        # Fallback if not valid JSON
-        state["product_manager_spec"] = response_content
+        state["product_manager_spec"] = str(response)
     
     return state
 
@@ -56,11 +55,61 @@ def dev_node(state: State) -> State:
     # Get the product spec from the previous node's output
     product_spec = state["product_manager_spec"]
     
-    # Extract requirements if product_spec is a dict, otherwise use full spec
+    # Format the requirements for the developer
     if isinstance(product_spec, dict):
-        requirements = product_spec.get("requirements", product_spec)
+        # Build a comprehensive requirements document
+        requirements_doc = f"""
+# {product_spec.get('product_name', 'Project Specification')}
+
+## Description
+{product_spec.get('description', 'No description provided')}
+
+## Requirements
+"""
+        for req in product_spec.get('requirements', []):
+            requirements_doc += f"""
+### {req.get('id', '')} - {req.get('title', '')}
+- **Type**: {req.get('type', '')}
+- **Priority**: {req.get('priority', '')}
+- **Status**: {req.get('status', '')}
+- **Description**: {req.get('description', '')}
+- **Acceptance Criteria**:
+"""
+            for ac in req.get('acceptance_criteria', []):
+                requirements_doc += f"  - {ac}\n"
+
+        # Add User Stories
+        requirements_doc += "\n## User Stories\n"
+        for story in product_spec.get('user_stories', []):
+            requirements_doc += f"""
+### {story.get('id', '')} - {story.get('title', '')}
+{story.get('story', '')}
+- **Linked Requirements**: {', '.join(story.get('requirements_linked', []))}
+- **Status**: {story.get('status', '')}
+"""
+
+        # Add Technical Notes
+        tech_notes = product_spec.get('technical_notes', {})
+        if tech_notes:
+            requirements_doc += "\n## Technical Notes\n"
+            requirements_doc += f"- **Frontend**: {tech_notes.get('frontend', 'Not specified')}\n"
+            requirements_doc += f"- **Backend**: {tech_notes.get('backend', 'Not specified')}\n"
+            if tech_notes.get('datamodel'):
+                requirements_doc += f"- **Data Model**: {json.dumps(tech_notes.get('datamodel'), indent=2)}\n"
+
+        # Add Next Steps
+        next_steps = product_spec.get('next_steps', {})
+        if next_steps:
+            requirements_doc += "\n## Next Steps\n"
+            requirements_doc += f"{next_steps.get('instruction_to_software_engineer', '')}\n"
+            requirements_doc += "\n**Initial Tasks**:\n"
+            for task in next_steps.get('initial_tasks', []):
+                requirements_doc += f"- {task}\n"
+            requirements_doc += f"\n**Current Progress**: {next_steps.get('current_progress', 'Not specified')}\n"
+
+        requirements = requirements_doc
     else:
-        requirements = product_spec
+        requirements = str(product_spec)
     
     print("Product Spec for Developer:")
     print(requirements)
@@ -70,7 +119,7 @@ def dev_node(state: State) -> State:
     response = software_engineer_agent.invoke({
         "messages": [
             ("system", SoftwareDevelopmentTeamPrompts.software_engineer_prompt()),
-            ("human", str(requirements))
+            ("human", requirements)
         ]
     })
     
