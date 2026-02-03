@@ -1,18 +1,16 @@
-from typing import Literal, TypedDict
+from typing import TypedDict
+import json
 
 import chainlit as cl
 from langchain.schema.runnable.config import RunnableConfig
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage
 from langgraph.graph import END, StateGraph, START
-from langgraph.graph.message import MessagesState
 
 from agents.development import (
-    scrum_orchestrator_agent,
     software_engineer_agent,
     product_owner_agent,
 )
 from agents.prompts import SoftwareDevelopmentTeamPrompts
-from agents.tools.tools import tool_node
 
 class State(TypedDict):
     user_input : str
@@ -25,36 +23,65 @@ def product_manager_node(state: State) -> State:
 
     print(state)
 
-    messages = [
-    (
-        "system",
-        SoftwareDevelopmentTeamPrompts.product_manager_prompt()
-    ),
-    ("human", state["user_input"])
-    ]
-
-    response = product_owner_agent.invoke(messages)
+    # Pass input in the format expected by create_react_agent
+    response = product_owner_agent.invoke({
+        "messages": [
+            ("system", SoftwareDevelopmentTeamPrompts.product_manager_prompt()),
+            ("human", state["user_input"])
+        ]
+    })
+    
     print("Product Manager Response:")
-    print(response.content)
+    print(response)
 
-    state["product_manager_spec"] = response.content
+    # Extract content from the response messages
+    if "messages" in response and len(response["messages"]) > 0:
+        response_content = response["messages"][-1].content
+    else:
+        response_content = str(response)
+    
+    # Parse the structured output from the response
+    try:
+        # The response content should be JSON from the structured output
+        parsed_spec = json.loads(response_content) if isinstance(response_content, str) else response_content
+        state["product_manager_spec"] = parsed_spec
+    except json.JSONDecodeError:
+        # Fallback if not valid JSON
+        state["product_manager_spec"] = response_content
+    
     return state
 
 
 def dev_node(state: State) -> State:
     # Get the product spec from the previous node's output
-    spec = state["product_manager_spec"]["requirements"]
+    product_spec = state["product_manager_spec"]
+    
+    # Extract requirements if product_spec is a dict, otherwise use full spec
+    if isinstance(product_spec, dict):
+        requirements = product_spec.get("requirements", product_spec)
+    else:
+        requirements = product_spec
     
     print("Product Spec for Developer:")
-    print(spec)
-    state["requirements"] = spec
+    print(requirements)
+    state["requirements"] = requirements
 
-    response = software_engineer_agent.invoke(spec)
+    # Format the input as expected by create_react_agent
+    response = software_engineer_agent.invoke({
+        "messages": [
+            ("system", SoftwareDevelopmentTeamPrompts.software_engineer_prompt()),
+            ("human", str(requirements))
+        ]
+    })
+    
     print("Developer Response:")
     print(response)
 
-
-    state["code"] = response["messages"][0].content
+    # Extract code from response messages
+    if "messages" in response and len(response["messages"]) > 0:
+        state["code"] = response["messages"][-1].content
+    else:
+        state["code"] = str(response)
 
     return state
  
@@ -91,7 +118,7 @@ async def on_message(user_msg: cl.Message):
         if isinstance(msg, HumanMessage):
             continue
 
-        if msg.content and metadata.get("langgraph_node") == "dev_node":
+        if msg.content and metadata.get("langgraph_node") == "software_engineer_agent":
             await final_answer.stream_token(msg.content)
 
     await final_answer.send()
