@@ -3,7 +3,6 @@ from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
 
 from agents.prompts import SoftwareDevelopmentTeamPrompts
-from agents.structured_outputs import ProductOwnerSpecification
 from agents.tools.tools import get_weather
 from config.settings import environment_variables
 from utils.inference_utils import get_inference_model
@@ -17,7 +16,6 @@ product_owner_agent = create_react_agent(
     prompt=PromptTemplate.from_template(
         template=SoftwareDevelopmentTeamPrompts.product_manager_prompt()
     ),
-    response_format=ProductOwnerSpecification.model_json_schema(),
 )
 
 software_engineer_agent = create_react_agent(
