@@ -35,6 +35,6 @@ scrum_orchestrator_agent = create_supervisor(
         model_provider=environment_variables.LLM_INFERENCE_PROVIDER
     ),
     prompt=PromptTemplate.from_template(
-        template=SoftwareDevelopmentTeamPrompts.system_prompt
+        template=SoftwareDevelopmentTeamPrompts.scrum_master_prompt()
     ),
 ).compile(name="agile")

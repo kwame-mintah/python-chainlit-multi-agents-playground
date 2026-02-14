@@ -54,8 +54,7 @@ def route_from_scrum_master(
     return "engineer"
 
 
-async def wait_for_user():
-    # Do nothing. Just pause.
+async def wait_for_user(state: MessagesState):
     return {}
 
 
@@ -68,40 +67,38 @@ graph.add_node("tools", tool_node)
 graph.add_node("wait_for_user", wait_for_user)
 
 # Entry
-graph.add_edge(START, "product_owner")
-graph.add_edge("wait_for_user", END)
+graph.add_edge(START, end_key="product_owner")
+graph.add_edge(start_key="wait_for_user", end_key=END)
 
 graph.add_conditional_edges(
-    "product_owner",
-    route_from_product_owner,
-    {
+    source="product_owner",
+    path=route_from_product_owner,
+    path_map={
         "scrum_master": "scrum_master",
         "wait_for_user": "wait_for_user",
     },
 )
 
 graph.add_conditional_edges(
-    "scrum_master",
-    route_from_scrum_master,
-    {
+    source="scrum_master",
+    path=route_from_scrum_master,
+    path_map={
         "engineer": "engineer",
         "product_owner": "product_owner",
         "end": END,
     },
 )
 
-# Conditional routing from engineer
 graph.add_conditional_edges(
-    "engineer",
-    route_from_engineer,
-    {
+    source="engineer",
+    path=route_from_engineer,
+    path_map={
         "tools": "tools",
         "scrum_master": "scrum_master",
     },
 )
 # Tool returns to engineer
 graph.add_edge("tools", "engineer")
-
 graph = graph.compile()
 
 
@@ -115,7 +112,9 @@ async def on_message(user_msg: cl.Message):
     inputs = {"messages": [HumanMessage(content=user_msg.content)]}
 
     async for msg, metadata in graph.astream(
-        inputs, stream_mode="messages", config=RunnableConfig(callbacks=[cb], **config)
+        inputs,
+        stream_mode="messages",
+        config=RunnableConfig(callbacks=[cb], recursion_limit=25, **config),
     ):
         if isinstance(msg, HumanMessage):
             continue  # skip user messages
