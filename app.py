@@ -3,6 +3,7 @@ from typing import Literal
 import chainlit as cl
 from langchain.schema.runnable.config import RunnableConfig
 from langchain_core.messages import HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph.message import MessagesState
 
@@ -12,6 +13,7 @@ from agents.development import (
     product_owner_agent,
 )
 from agents.tools.tools import tool_node
+from utils.message_utils import extract_text_content
 
 
 def route_from_product_owner(
@@ -23,7 +25,7 @@ def route_from_product_owner(
 
     last_message = messages[-1]
 
-    if "NEED_USER_INPUT:" in last_message.content:
+    if "NEED_USER_INPUT:" in extract_text_content(last_message.content):
         return "wait_for_user"
 
     return "scrum_master"
@@ -45,10 +47,10 @@ def route_from_scrum_master(
     messages = state["messages"]
     last_message = messages[-1]
 
-    if "FINAL:" in last_message.content:
+    if "FINAL:" in extract_text_content(last_message.content):
         return "end"
 
-    if "CLARIFY_WITH_PO" in last_message.content:
+    if "CLARIFY_WITH_PO" in extract_text_content(last_message.content):
         return "product_owner"
 
     return "engineer"
@@ -99,7 +101,8 @@ graph.add_conditional_edges(
 )
 # Tool returns to engineer
 graph.add_edge("tools", "engineer")
-graph = graph.compile()
+memory = MemorySaver()
+graph = graph.compile(checkpointer=memory)
 
 
 @cl.on_message
@@ -121,7 +124,9 @@ async def on_message(user_msg: cl.Message):
 
         node = metadata.get("langgraph_node", "")
         if msg.content and node in ["product_owner", "scrum_master", "engineer"]:
-            await final_answer.stream_token(msg.content)
+            text = extract_text_content(msg.content)
+            if text:
+                await final_answer.stream_token(text)
 
         # Optionally detect wait_for_user node
         if node == "wait_for_user":
