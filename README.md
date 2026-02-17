@@ -19,21 +19,26 @@ config:
     curve: linear
 ---
 graph TD;
-        __start__([<p>__start__</p>]):::first
-        product_owner_agent(product_owner_agent)
-        scrum_master(scrum_master)
-        software_engineer_agent(software_engineer_agent)
-        tools(tools)
-        __start__ --> product_owner_agent;
-        product_owner_agent --> scrum_master;
-        scrum_master --> product_owner_agent;
-        scrum_master --> software_engineer_agent;
-        software_engineer_agent --> scrum_master;
-        software_engineer_agent --> tools;
-        tools --> software_engineer_agent;
-        classDef default fill:#f2f0ff,line-height:1.2
-        classDef first fill-opacity:0
-        classDef last fill:#bfb6fc
+	__start__([<p>__start__</p>]):::first
+	product_owner(product_owner)
+	scrum_master(scrum_master)
+	engineer(engineer)
+	tools(tools)
+	wait_for_user(wait_for_user)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> product_owner;
+	engineer -.-> scrum_master;
+	engineer -.-> tools;
+	product_owner -.-> scrum_master;
+	product_owner -.-> wait_for_user;
+	scrum_master -. &nbsp;end&nbsp; .-> __end__;
+	scrum_master -.-> engineer;
+	scrum_master -.-> product_owner;
+	tools --> engineer;
+	wait_for_user --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
 ```
 
 <!---
